@@ -150,6 +150,33 @@
             background: #c0392b;
         }
         
+        .edit-btn {
+            background: #f39c12;
+            padding: 5px 10px;
+            font-size: 12px;
+            margin-right: 5px;
+        }
+        
+        .edit-btn:hover {
+            background: #e67e22;
+        }
+        
+        .update-btn {
+            background: #9b59b6;
+        }
+        
+        .update-btn:hover {
+            background: #8e44ad;
+        }
+        
+        .cancel-btn {
+            background: #95a5a6;
+        }
+        
+        .cancel-btn:hover {
+            background: #7f8c8d;
+        }
+        
         .export-btn {
             background: #27ae60;
         }
@@ -458,6 +485,16 @@
             gap: 5px;
         }
         
+        .edit-mode {
+            border-left: 4px solid #f39c12;
+            background: #fff9e6;
+        }
+        
+        .button-group {
+            display: flex;
+            gap: 5px;
+        }
+        
         @media (max-width: 900px) {
             .dashboard {
                 grid-template-columns: 1fr;
@@ -483,6 +520,10 @@
             
             .feature-list {
                 grid-template-columns: 1fr;
+            }
+            
+            .button-group {
+                flex-direction: column;
             }
         }
     </style>
@@ -522,6 +563,7 @@
             <div class="guide-step">3. <strong>请假记录</strong>：选择请假类型，支持全天/上午/下午请假</div>
             <div class="guide-step">4. <strong>查看统计</strong>：实时查看月度工作统计</div>
             <div class="guide-step">5. <strong>导出数据</strong>：点击导出按钮生成Excel报表</div>
+            <div class="guide-step">6. <strong>修改记录</strong>：点击记录中的修改按钮编辑已有记录</div>
         </div>
 
         <h1>📊 每日工作记录</h1>
@@ -577,7 +619,9 @@
                     <option value="rest">休息日</option>
                     <option value="leave">请假</option>
                 </select>
-                <button onclick="addRecord()">保存记录</button>
+                <button id="saveButton" onclick="addRecord()">保存记录</button>
+                <button id="updateButton" class="update-btn" onclick="updateRecord()" style="display: none;">更新记录</button>
+                <button id="cancelButton" class="cancel-btn" onclick="cancelEdit()" style="display: none;">取消修改</button>
             </div>
             
             <div id="timeInputs">
@@ -731,6 +775,7 @@
 
     <script>
         let currentCalendarDate = new Date();
+        let currentEditingId = null; // 当前正在编辑的记录ID
         
         // 为不同用户生成唯一标识符
         function getUserId() {
@@ -1022,6 +1067,231 @@
             alert('记录保存成功！');
         }
 
+        // 更新记录
+        function updateRecord() {
+            if (!currentEditingId) {
+                alert('没有正在编辑的记录');
+                return;
+            }
+
+            const date = document.getElementById('dateInput').value;
+            const dayType = document.getElementById('dayType').value;
+            
+            if (!date) {
+                alert('请选择日期');
+                return;
+            }
+
+            let record = {
+                id: currentEditingId,
+                date: date,
+                dayType: dayType,
+                morningWork: null,
+                lunchBreak: null,
+                afternoonWork: null,
+                overtime: null,
+                leaveType: null
+            };
+
+            // 上午工作（请假时也可以记录）
+            if (document.getElementById('morningWorkCheck').checked) {
+                const morningStart = document.getElementById('morningStart').value;
+                const morningEnd = document.getElementById('morningEnd').value;
+                const morningDuration = calculateDuration(morningStart, morningEnd);
+                
+                record.morningWork = {
+                    start: morningStart,
+                    end: morningEnd,
+                    duration: morningDuration
+                };
+            }
+
+            // 午休时间
+            if (document.getElementById('lunchBreakCheck').checked) {
+                const lunchStart = document.getElementById('lunchStart').value;
+                const lunchEnd = document.getElementById('lunchEnd').value;
+                const lunchDuration = calculateDuration(lunchStart, lunchEnd);
+                
+                record.lunchBreak = {
+                    start: lunchStart,
+                    end: lunchEnd,
+                    duration: lunchDuration
+                };
+            }
+
+            // 下午工作（请假时也可以记录）
+            if (document.getElementById('afternoonWorkCheck').checked) {
+                const afternoonStart = document.getElementById('afternoonStart').value;
+                const afternoonEnd = document.getElementById('afternoonEnd').value;
+                const afternoonDuration = calculateDuration(afternoonStart, afternoonEnd);
+                
+                record.afternoonWork = {
+                    start: afternoonStart,
+                    end: afternoonEnd,
+                    duration: afternoonDuration
+                };
+            }
+
+            // 加班
+            if (document.getElementById('overtimeCheck').checked) {
+                const overtimeStart = document.getElementById('overtimeStart').value;
+                const overtimeEnd = document.getElementById('overtimeEnd').value;
+                const overtimeDuration = calculateDuration(overtimeStart, overtimeEnd);
+                
+                record.overtime = {
+                    start: overtimeStart,
+                    end: overtimeEnd,
+                    duration: overtimeDuration
+                };
+            }
+
+            // 请假类型
+            if (dayType === 'leave') {
+                record.leaveType = getLeaveType();
+                
+                // 根据请假类型自动调整工作时间段
+                if (record.leaveType === 'morning') {
+                    // 上午请假，自动取消上午工作
+                    record.morningWork = null;
+                } else if (record.leaveType === 'afternoon') {
+                    // 下午请假，自动取消下午工作
+                    record.afternoonWork = null;
+                } else if (record.leaveType === 'all') {
+                    // 全天请假，取消所有工作
+                    record.morningWork = null;
+                    record.afternoonWork = null;
+                    record.overtime = null;
+                }
+            }
+
+            // 检查是否至少有一个工作时间段（除了全天请假）
+            if (dayType !== 'leave' || record.leaveType !== 'all') {
+                if (!record.morningWork && !record.afternoonWork && !record.overtime) {
+                    alert('请至少选择一个工作时间段');
+                    return;
+                }
+            }
+
+            // 保存到本地存储
+            const records = getRecords();
+            const existingIndex = records.findIndex(r => r.id === currentEditingId);
+            if (existingIndex > -1) {
+                records[existingIndex] = record; // 更新记录
+            }
+            
+            localStorage.setItem(getStorageKey(), JSON.stringify(records));
+            
+            // 取消编辑模式
+            cancelEdit();
+            
+            // 刷新显示
+            displayRecords();
+            updateStatistics();
+            renderCalendar();
+            alert('记录更新成功！');
+        }
+
+        // 取消编辑
+        function cancelEdit() {
+            currentEditingId = null;
+            document.getElementById('saveButton').style.display = 'inline-block';
+            document.getElementById('updateButton').style.display = 'none';
+            document.getElementById('cancelButton').style.display = 'none';
+            setDefaultDate();
+            document.getElementById('dayType').value = 'work';
+            toggleTimeInputs();
+            resetTimeInputs();
+        }
+
+        // 重置时间输入
+        function resetTimeInputs() {
+            document.getElementById('morningWorkCheck').checked = true;
+            document.getElementById('lunchBreakCheck').checked = true;
+            document.getElementById('afternoonWorkCheck').checked = true;
+            document.getElementById('overtimeCheck').checked = false;
+            
+            document.getElementById('morningStart').value = '08:00';
+            document.getElementById('morningEnd').value = '12:00';
+            document.getElementById('lunchStart').value = '12:00';
+            document.getElementById('lunchEnd').value = '13:30';
+            document.getElementById('afternoonStart').value = '13:30';
+            document.getElementById('afternoonEnd').value = '17:30';
+            document.getElementById('overtimeStart').value = '18:30';
+            document.getElementById('overtimeEnd').value = '21:30';
+            
+            toggleMorningWork();
+            toggleLunchBreak();
+            toggleAfternoonWork();
+            toggleOvertime();
+        }
+
+        // 编辑记录
+        function editRecord(id) {
+            const records = getRecords();
+            const record = records.find(r => r.id === id);
+            
+            if (!record) {
+                alert('记录不存在');
+                return;
+            }
+            
+            // 设置编辑模式
+            currentEditingId = id;
+            document.getElementById('saveButton').style.display = 'none';
+            document.getElementById('updateButton').style.display = 'inline-block';
+            document.getElementById('cancelButton').style.display = 'inline-block';
+            
+            // 填充表单数据
+            document.getElementById('dateInput').value = record.date;
+            document.getElementById('dayType').value = record.dayType;
+            toggleTimeInputs();
+            
+            // 重置所有复选框和选项
+            document.getElementById('morningWorkCheck').checked = false;
+            document.getElementById('lunchBreakCheck').checked = false;
+            document.getElementById('afternoonWorkCheck').checked = false;
+            document.getElementById('overtimeCheck').checked = false;
+            
+            // 填充工作时间数据
+            if (record.morningWork) {
+                document.getElementById('morningWorkCheck').checked = true;
+                document.getElementById('morningStart').value = record.morningWork.start;
+                document.getElementById('morningEnd').value = record.morningWork.end;
+            }
+            
+            if (record.lunchBreak) {
+                document.getElementById('lunchBreakCheck').checked = true;
+                document.getElementById('lunchStart').value = record.lunchBreak.start;
+                document.getElementById('lunchEnd').value = record.lunchBreak.end;
+            }
+            
+            if (record.afternoonWork) {
+                document.getElementById('afternoonWorkCheck').checked = true;
+                document.getElementById('afternoonStart').value = record.afternoonWork.start;
+                document.getElementById('afternoonEnd').value = record.afternoonWork.end;
+            }
+            
+            if (record.overtime) {
+                document.getElementById('overtimeCheck').checked = true;
+                document.getElementById('overtimeStart').value = record.overtime.start;
+                document.getElementById('overtimeEnd').value = record.overtime.end;
+            }
+            
+            // 设置请假类型
+            if (record.leaveType) {
+                document.querySelector(`input[name="leaveType"][value="${record.leaveType}"]`).checked = true;
+            }
+            
+            // 更新显示状态
+            toggleMorningWork();
+            toggleLunchBreak();
+            toggleAfternoonWork();
+            toggleOvertime();
+            
+            // 滚动到表单区域
+            document.getElementById('input-section').scrollIntoView({ behavior: 'smooth' });
+        }
+
         // 删除记录
         function deleteRecord(id) {
             if (confirm('确定要删除这条记录吗？')) {
@@ -1053,7 +1323,7 @@
             records.sort((a, b) => new Date(b.date) - new Date(a.date));
             
             recordsList.innerHTML = records.map(record => `
-                <div class="record-item">
+                <div class="record-item ${currentEditingId === record.id ? 'edit-mode' : ''}">
                     <div class="record-header">
                         <div>
                             <span class="record-date">${record.date}</span>
@@ -1062,7 +1332,10 @@
                                 ${record.leaveType ? `(${record.leaveType === 'all' ? '全天' : record.leaveType === 'morning' ? '上午' : '下午'})` : ''}
                             </span>
                         </div>
-                        <button class="delete-btn" onclick="deleteRecord(${record.id})">删除</button>
+                        <div class="button-group">
+                            <button class="edit-btn" onclick="editRecord(${record.id})">修改</button>
+                            <button class="delete-btn" onclick="deleteRecord(${record.id})">删除</button>
+                        </div>
                     </div>
                     
                     ${record.dayType !== 'rest' ? `
@@ -1358,6 +1631,7 @@
                 updateStatistics();
                 renderCalendar();
                 document.getElementById('lastPunchTime').textContent = '今日尚未打卡';
+                cancelEdit(); // 清空编辑状态
             }
         }
 
