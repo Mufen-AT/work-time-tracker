@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>工作时间与加班统计系统</title>
+    <title>工作时间与加班统计系统 - 优化版</title>
     <style>
         * {
             margin: 0;
@@ -27,7 +27,6 @@
             box-shadow: 0 2px 10px rgba(0,0,0,0.1);
         }
         
-        /* 新增欢迎区域样式 */
         .welcome-section {
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             color: white;
@@ -116,14 +115,14 @@
             margin: 5px 0;
         }
         
-        input, select, button {
+        input, select, button, textarea {
             padding: 10px;
             border: 1px solid #ddd;
             border-radius: 5px;
             font-size: 14px;
         }
         
-        input:focus, select:focus {
+        input:focus, select:focus, textarea:focus {
             outline: none;
             border-color: #3498db;
         }
@@ -194,6 +193,17 @@
         
         .punch-btn:hover {
             background: #d35400;
+        }
+        
+        .supplement-btn {
+            background: #9b59b6;
+            font-size: 16px;
+            padding: 12px 20px;
+            margin: 10px 0;
+        }
+        
+        .supplement-btn:hover {
+            background: #8e44ad;
         }
         
         .punch-section {
@@ -327,17 +337,33 @@
             color: #bdc3c7;
         }
         
+        .period-day {
+            background-color: rgba(52, 152, 219, 0.2);
+        }
+        
+        .selected-day {
+            background-color: rgba(155, 89, 182, 0.3);
+        }
+        
         .records-section h3 {
             margin-bottom: 15px;
             color: #2c3e50;
         }
         
         .record-item {
-            background: #f8f9fa;
             padding: 15px;
             margin-bottom: 10px;
             border-radius: 5px;
             border-left: 4px solid #3498db;
+            transition: all 0.3s ease;
+        }
+        
+        .record-item:nth-child(odd) {
+            background: #f9f7ff;
+        }
+        
+        .record-item:nth-child(even) {
+            background: #f0f8ff;
         }
         
         .record-header {
@@ -351,6 +377,17 @@
             font-weight: bold;
             color: #2c3e50;
             font-size: 16px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .weekday {
+            font-size: 14px;
+            color: #7f8c8d;
+            background: rgba(127, 140, 141, 0.1);
+            padding: 2px 8px;
+            border-radius: 10px;
         }
         
         .record-type {
@@ -387,14 +424,11 @@
             background: white;
             padding: 10px;
             border-radius: 5px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
         }
         
         .normal-work {
             border-left: 3px solid #3498db;
-        }
-        
-        .lunch-break {
-            border-left: 3px solid #f39c12;
         }
         
         .overtime {
@@ -420,6 +454,12 @@
             color: #e74c3c;
             font-weight: bold;
             font-size: 14px;
+        }
+        
+        .overtime-duration {
+            color: #e74c3c;
+            font-weight: bold;
+            font-size: 16px;
         }
         
         .leave-duration {
@@ -471,6 +511,14 @@
             font-weight: bold;
             margin-bottom: 8px;
             color: #2c3e50;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            cursor: pointer;
+        }
+        
+        .time-section-content {
+            margin-top: 10px;
         }
         
         .leave-options {
@@ -493,6 +541,137 @@
         .button-group {
             display: flex;
             gap: 5px;
+        }
+        
+        .settings-section {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            border-left: 4px solid #9b59b6;
+        }
+        
+        .settings-title {
+            font-weight: bold;
+            margin-bottom: 15px;
+            color: #2c3e50;
+            font-size: 18px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            cursor: pointer;
+        }
+        
+        .settings-content {
+            margin-top: 15px;
+        }
+        
+        .period-info {
+            margin-top: 10px;
+            padding: 10px;
+            background: white;
+            border-radius: 5px;
+            font-size: 14px;
+            color: #666;
+        }
+        
+        .supplement-section {
+            margin-top: 15px;
+            padding: 15px;
+            background: white;
+            border-radius: 5px;
+            border: 1px solid #e0e0e0;
+        }
+        
+        .supplement-calendar {
+            margin-top: 15px;
+        }
+        
+        .selected-dates {
+            margin-top: 15px;
+            padding: 10px;
+            background: white;
+            border-radius: 5px;
+            font-size: 14px;
+        }
+        
+        .selected-date-item {
+            display: inline-block;
+            background: #3498db;
+            color: white;
+            padding: 5px 10px;
+            border-radius: 15px;
+            margin: 5px;
+            font-size: 12px;
+        }
+        
+        .backup-section {
+            margin-top: 15px;
+            padding: 15px;
+            background: white;
+            border-radius: 5px;
+            border: 1px solid #e0e0e0;
+        }
+        
+        .backup-options {
+            display: flex;
+            gap: 10px;
+            margin-top: 15px;
+            flex-wrap: wrap;
+        }
+        
+        .backup-info {
+            margin-top: 15px;
+            padding: 10px;
+            background: white;
+            border-radius: 5px;
+            font-size: 14px;
+            color: #666;
+        }
+        
+        .month-selector {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            border-left: 4px solid #3498db;
+        }
+        
+        .sort-options {
+            display: flex;
+            gap: 10px;
+            margin-top: 15px;
+            align-items: center;
+        }
+        
+        .all-functions-section {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            border-left: 4px solid #e67e22;
+        }
+        
+        .function-group {
+            margin-top: 15px;
+            padding: 15px;
+            background: white;
+            border-radius: 5px;
+            border: 1px solid #e0e0e0;
+        }
+        
+        .function-title {
+            font-weight: bold;
+            margin-bottom: 10px;
+            color: #2c3e50;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            cursor: pointer;
+        }
+        
+        .function-content {
+            margin-top: 10px;
         }
         
         @media (max-width: 900px) {
@@ -525,15 +704,24 @@
             .button-group {
                 flex-direction: column;
             }
+            
+            .backup-options {
+                flex-direction: column;
+            }
+            
+            .sort-options {
+                flex-direction: column;
+                align-items: flex-start;
+            }
         }
     </style>
 </head>
 <body>
     <div class="container">
-        <!-- 新增欢迎区域 -->
+        <!-- 欢迎区域 -->
         <div class="welcome-section">
-            <div class="welcome-title">👋 欢迎使用工作时间统计系统</div>
-            <div class="welcome-subtitle">简单易用的个人工作时间记录工具</div>
+            <div class="welcome-title">👋 欢迎使用工作时间统计系统 - 优化版</div>
+            <div class="welcome-subtitle">简洁实用的个人工作时间记录工具</div>
             
             <div class="feature-list">
                 <div class="feature-item">
@@ -549,8 +737,16 @@
                     <small>自动生成月度报表</small>
                 </div>
                 <div class="feature-item">
-                    <div>💾 本地存储</div>
-                    <small>数据安全保存在本地</small>
+                    <div>🔧 自定义周期</div>
+                    <small>灵活设置统计周期</small>
+                </div>
+                <div class="feature-item">
+                    <div>🔄 补卡功能</div>
+                    <small>批量补录未打卡日期</small>
+                </div>
+                <div class="feature-item">
+                    <div>💾 数据备份</div>
+                    <small>安全备份与恢复</small>
                 </div>
             </div>
         </div>
@@ -561,16 +757,141 @@
             <div class="guide-step">1. <strong>一键打卡</strong>：点击橙色按钮快速记录标准工作日</div>
             <div class="guide-step">2. <strong>手动记录</strong>：选择日期和工作类型，自定义工作时间</div>
             <div class="guide-step">3. <strong>请假记录</strong>：选择请假类型，支持全天/上午/下午请假</div>
-            <div class="guide-step">4. <strong>查看统计</strong>：实时查看月度工作统计</div>
+            <div class="guide-step">4. <strong>查看统计</strong>：选择月份查看工作统计</div>
             <div class="guide-step">5. <strong>导出数据</strong>：点击导出按钮生成Excel报表</div>
             <div class="guide-step">6. <strong>修改记录</strong>：点击记录中的修改按钮编辑已有记录</div>
+            <div class="guide-step">7. <strong>自定义周期</strong>：设置统计周期开始日，如25号到下月25号</div>
+            <div class="guide-step">8. <strong>补卡功能</strong>：批量选择未打卡日期进行补卡</div>
         </div>
 
-        <h1>📊 每日工作记录</h1>
+        <h1>📊 工作时间与加班统计系统</h1>
+        
+        <!-- 月份选择器 -->
+        <div class="month-selector">
+            <div class="settings-title">📅 月份选择</div>
+            <div class="input-group">
+                <label for="statMonth">选择统计月份：</label>
+                <input type="month" id="statMonth" value="">
+                <button onclick="updateSelectedMonthStats()">更新统计</button>
+            </div>
+            <div class="period-info" id="selectedMonthInfo">
+                当前显示：本月统计数据
+            </div>
+        </div>
+        
+        <!-- 所有功能整合区域 -->
+        <div class="all-functions-section">
+            <div class="settings-title" onclick="toggleAllFunctions()">
+                <span>⚙️ 所有功能设置</span>
+                <span id="allFunctionsToggle">▼</span>
+            </div>
+            <div class="settings-content" id="allFunctionsContent" style="display: block;">
+                <!-- 统计周期设置 -->
+                <div class="function-group">
+                    <div class="function-title" onclick="toggleFunction('periodSettings')">
+                        <span>📅 统计周期设置</span>
+                        <span id="periodSettingsToggle">▶</span>
+                    </div>
+                    <div class="function-content" id="periodSettingsContent" style="display: none;">
+                        <div class="input-group">
+                            <label for="periodStartDay">统计周期开始日：</label>
+                            <select id="periodStartDay">
+                                <option value="1">1号</option>
+                                <option value="2">2号</option>
+                                <option value="3">3号</option>
+                                <option value="4">4号</option>
+                                <option value="5">5号</option>
+                                <option value="6">6号</option>
+                                <option value="7">7号</option>
+                                <option value="8">8号</option>
+                                <option value="9">9号</option>
+                                <option value="10">10号</option>
+                                <option value="11">11号</option>
+                                <option value="12">12号</option>
+                                <option value="13">13号</option>
+                                <option value="14">14号</option>
+                                <option value="15">15号</option>
+                                <option value="16">16号</option>
+                                <option value="17">17号</option>
+                                <option value="18">18号</option>
+                                <option value="19">19号</option>
+                                <option value="20">20号</option>
+                                <option value="21">21号</option>
+                                <option value="22">22号</option>
+                                <option value="23">23号</option>
+                                <option value="24">24号</option>
+                                <option value="25" selected>25号</option>
+                                <option value="26">26号</option>
+                                <option value="27">27号</option>
+                                <option value="28">28号</option>
+                                <option value="29">29号</option>
+                                <option value="30">30号</option>
+                                <option value="31">31号</option>
+                            </select>
+                            <button onclick="savePeriodSettings()">保存设置</button>
+                        </div>
+                        <div class="period-info" id="periodInfo">
+                            当前统计周期：上个月25号 - 本月25号
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- 补卡功能 -->
+                <div class="function-group">
+                    <div class="function-title" onclick="toggleFunction('supplementFunction')">
+                        <span>🔄 补卡功能</span>
+                        <span id="supplementFunctionToggle">▶</span>
+                    </div>
+                    <div class="function-content" id="supplementFunctionContent" style="display: none;">
+                        <div class="input-group">
+                            <button class="supplement-btn" onclick="toggleSupplementMode()">开启补卡模式</button>
+                            <button class="supplement-btn" onclick="batchPunchCard()" id="batchPunchBtn" style="display: none;">批量补卡</button>
+                            <button class="cancel-btn" onclick="cancelSupplementMode()" id="cancelSupplementBtn" style="display: none;">取消补卡</button>
+                        </div>
+                        <div class="selected-dates" id="selectedDates" style="display: none;">
+                            <div>已选择日期：</div>
+                            <div id="selectedDatesList"></div>
+                        </div>
+                        <div class="supplement-calendar" id="supplementCalendar" style="display: none;">
+                            <div class="calendar-header">
+                                <div class="calendar-title" id="supplementCalendarTitle">2023年12月</div>
+                                <div class="calendar-nav">
+                                    <button onclick="changeSupplementMonth(-1)">上个月</button>
+                                    <button onclick="changeSupplementMonth(1)">下个月</button>
+                                </div>
+                            </div>
+                            <div class="calendar-grid" id="supplementCalendarGrid">
+                                <!-- 补卡日历由JavaScript生成 -->
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- 数据备份与恢复 -->
+                <div class="function-group">
+                    <div class="function-title" onclick="toggleFunction('backupFunction')">
+                        <span>💾 数据备份与恢复</span>
+                        <span id="backupFunctionToggle">▶</span>
+                    </div>
+                    <div class="function-content" id="backupFunctionContent" style="display: none;">
+                        <div class="backup-options">
+                            <button onclick="exportBackup()">导出数据备份</button>
+                            <button onclick="importBackup()">导入数据备份</button>
+                            <button onclick="clearAllData()" style="background: #e74c3c;">清空所有数据</button>
+                        </div>
+                        <div class="backup-info">
+                            <p>数据备份功能可以帮助您保存工作记录，防止数据丢失。</p>
+                            <p>导出备份：将当前所有数据导出为JSON文件</p>
+                            <p>导入备份：从JSON文件恢复数据（将覆盖现有数据）</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
         
         <div class="dashboard">
             <div class="stats-section">
-                <h2>本月统计汇总</h2>
+                <h2 id="statsTitle">本月统计汇总</h2>
                 <div class="stats-grid">
                     <div class="stat-item">
                         <div>工作天数</div>
@@ -644,116 +965,97 @@
                     </div>
                 </div>
                 
-                <!-- 上午工作时间 -->
-                <div class="time-section" id="morningSection">
-                    <div class="time-section-title">上午工作</div>
-                    <div class="checkbox-group">
-                        <label>
-                            <input type="checkbox" id="morningWorkCheck" checked onchange="toggleMorningWork()">
-                            <span>上午上班</span>
-                        </label>
+                <!-- 工作时间选项 - 可展开收缩 -->
+                <div class="time-section" id="workTimeSection">
+                    <div class="time-section-title" onclick="toggleWorkTime()">
+                        <span>工作时间设置</span>
+                        <span id="workTimeToggle">▼</span>
                     </div>
-                    
-                    <div id="morningWorkGroup">
-                        <div class="time-group">
-                            <span>上班:</span>
-                            <select id="morningStart">
-                                <option value="08:00">08:00</option>
-                                <option value="08:30">08:30</option>
-                                <option value="09:00">09:00</option>
-                            </select>
-                            <span>下班:</span>
-                            <select id="morningEnd">
-                                <option value="12:00" selected>12:00</option>
-                                <option value="12:30">12:30</option>
-                            </select>
+                    <div class="time-section-content" id="workTimeContent" style="display: block;">
+                        <!-- 上午工作时间 -->
+                        <div class="checkbox-group">
+                            <label>
+                                <input type="checkbox" id="morningWorkCheck" checked onchange="toggleMorningWork()">
+                                <span>上午上班</span>
+                            </label>
                         </div>
-                    </div>
-                </div>
-                
-                <!-- 中午休息 -->
-                <div class="time-section" id="lunchSection">
-                    <div class="time-section-title">中午休息</div>
-                    <div class="checkbox-group">
-                        <label>
-                            <input type="checkbox" id="lunchBreakCheck" checked onchange="toggleLunchBreak()">
-                            <span>午休时间</span>
-                        </label>
-                    </div>
-                    
-                    <div id="lunchBreakGroup">
-                        <div class="time-group">
-                            <span>开始:</span>
-                            <select id="lunchStart">
-                                <option value="12:00" selected>12:00</option>
-                                <option value="12:30">12:30</option>
-                            </select>
-                            <span>结束:</span>
-                            <select id="lunchEnd">
-                                <option value="13:00">13:00</option>
-                                <option value="13:30" selected>13:30</option>
-                                <option value="14:00">14:00</option>
-                            </select>
+                        
+                        <div id="morningWorkGroup">
+                            <div class="time-group">
+                                <span>上班:</span>
+                                <select id="morningStart">
+                                    <option value="08:00">08:00</option>
+                                    <option value="08:30">08:30</option>
+                                    <option value="09:00">09:00</option>
+                                </select>
+                                <span>下班:</span>
+                                <select id="morningEnd">
+                                    <option value="12:00" selected>12:00</option>
+                                    <option value="12:30">12:30</option>
+                                </select>
+                            </div>
                         </div>
-                    </div>
-                </div>
-                
-                <!-- 下午工作时间 -->
-                <div class="time-section" id="afternoonSection">
-                    <div class="time-section-title">下午工作</div>
-                    <div class="checkbox-group">
-                        <label>
-                            <input type="checkbox" id="afternoonWorkCheck" checked onchange="toggleAfternoonWork()">
-                            <span>下午上班</span>
-                        </label>
-                    </div>
-                    
-                    <div id="afternoonWorkGroup">
-                        <div class="time-group">
-                            <span>上班:</span>
-                            <select id="afternoonStart">
-                                <option value="13:30" selected>13:30</option>
-                                <option value="14:00">14:00</option>
-                            </select>
-                            <span>下班:</span>
-                            <select id="afternoonEnd">
-                                <option value="17:00">17:00</option>
-                                <option value="17:30" selected>17:30</option>
-                                <option value="18:00">18:00</option>
-                            </select>
+                        
+                        <!-- 下午工作时间 -->
+                        <div class="checkbox-group">
+                            <label>
+                                <input type="checkbox" id="afternoonWorkCheck" checked onchange="toggleAfternoonWork()">
+                                <span>下午上班</span>
+                            </label>
+                        </div>
+                        
+                        <div id="afternoonWorkGroup">
+                            <div class="time-group">
+                                <span>上班:</span>
+                                <select id="afternoonStart">
+                                    <option value="13:30" selected>13:30</option>
+                                    <option value="14:00">14:00</option>
+                                </select>
+                                <span>下班:</span>
+                                <select id="afternoonEnd">
+                                    <option value="17:00">17:00</option>
+                                    <option value="17:30" selected>17:30</option>
+                                    <option value="18:00">18:00</option>
+                                </select>
+                            </div>
                         </div>
                     </div>
                 </div>
                 
                 <!-- 晚上加班 -->
                 <div class="time-section" id="overtimeSection">
-                    <div class="time-section-title">晚上加班</div>
-                    <div class="checkbox-group">
-                        <label>
-                            <input type="checkbox" id="overtimeCheck" onchange="toggleOvertime()">
-                            <span>晚上加班</span>
-                        </label>
+                    <div class="time-section-title" onclick="toggleOvertimeSection()">
+                        <span>晚上加班</span>
+                        <span id="overtimeToggle">▼</span>
                     </div>
-                    
-                    <div id="overtimeGroup" style="display: none;">
-                        <div class="time-group">
-                            <span>开始:</span>
-                            <select id="overtimeStart">
-                                <option value="18:30">18:30</option>
-                                <option value="19:00">19:00</option>
-                                <option value="19:30">19:30</option>
-                                <option value="20:00">20:00</option>
-                            </select>
-                            <span>结束:</span>
-                            <select id="overtimeEnd">
-                                <option value="20:00">20:00</option>
-                                <option value="20:30">20:30</option>
-                                <option value="21:00">21:00</option>
-                                <option value="21:30" selected>21:30</option>
-                                <option value="22:00">22:00</option>
-                                <option value="22:30">22:30</option>
-                                <option value="23:00">23:00</option>
-                            </select>
+                    <div class="time-section-content" id="overtimeContent" style="display: block;">
+                        <div class="checkbox-group">
+                            <label>
+                                <input type="checkbox" id="overtimeCheck" onchange="toggleOvertime()">
+                                <span>晚上加班</span>
+                            </label>
+                        </div>
+                        
+                        <div id="overtimeGroup" style="display: none;">
+                            <div class="time-group">
+                                <span>开始:</span>
+                                <select id="overtimeStart">
+                                    <option value="18:30">18:30</option>
+                                    <option value="19:00">19:00</option>
+                                    <option value="19:30">19:30</option>
+                                    <option value="20:00">20:00</option>
+                                </select>
+                                <span>结束:</span>
+                                <select id="overtimeEnd">
+                                    <option value="20:00">20:00</option>
+                                    <option value="20:30">20:30</option>
+                                    <option value="21:00">21:00</option>
+                                    <option value="21:30" selected>21:30</option>
+                                    <option value="22:00">22:00</option>
+                                    <option value="22:30">22:30</option>
+                                    <option value="23:00">23:00</option>
+                                </select>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -761,21 +1063,36 @@
             
             <div class="input-group">
                 <button class="export-btn" onclick="exportToExcel()">📊 导出Excel表格</button>
-                <button onclick="clearAllData()" style="background: #95a5a6;">清空所有数据</button>
             </div>
         </div>
         
         <div class="records-section">
-            <h3>记录列表</h3>
+            <div class="sort-options">
+                <h3>记录列表</h3>
+                <div>
+                    <label for="sortOrder">排序方式：</label>
+                    <select id="sortOrder" onchange="displayRecords()">
+                        <option value="desc">日期降序（最新在前）</option>
+                        <option value="asc">日期升序（最早在前）</option>
+                    </select>
+                </div>
+            </div>
             <div id="recordsList">
                 <!-- 记录列表由JavaScript生成 -->
             </div>
         </div>
     </div>
 
+    <!-- 隐藏的文件输入框，用于导入备份 -->
+    <input type="file" id="backupFileInput" accept=".json" style="display: none;">
+    
     <script>
         let currentCalendarDate = new Date();
         let currentEditingId = null; // 当前正在编辑的记录ID
+        let isSupplementMode = false; // 是否处于补卡模式
+        let selectedDates = []; // 选择的补卡日期
+        let currentSupplementMonth = new Date(); // 补卡日历当前月份
+        let selectedMonth = null; // 当前选择的统计月份
         
         // 为不同用户生成唯一标识符
         function getUserId() {
@@ -792,16 +1109,85 @@
             return 'workRecords_' + getUserId();
         }
         
+        // 获取统计周期设置
+        function getPeriodSettings() {
+            const stored = localStorage.getItem('periodSettings_' + getUserId());
+            return stored ? JSON.parse(stored) : { startDay: 25 };
+        }
+        
+        // 保存统计周期设置
+        function savePeriodSettings() {
+            const startDay = parseInt(document.getElementById('periodStartDay').value);
+            localStorage.setItem('periodSettings_' + getUserId(), JSON.stringify({ startDay }));
+            updatePeriodInfo();
+            updateStatistics();
+            renderCalendar();
+            alert('统计周期设置已保存！');
+        }
+        
+        // 更新统计周期信息显示
+        function updatePeriodInfo() {
+            const settings = getPeriodSettings();
+            const startDay = settings.startDay;
+            const periodRange = getCurrentPeriodRange();
+            
+            const startDate = `${periodRange.start.getFullYear()}-${periodRange.start.getMonth()+1}-${periodRange.start.getDate()}`;
+            const endDate = `${periodRange.end.getFullYear()}-${periodRange.end.getMonth()+1}-${periodRange.end.getDate()}`;
+            
+            document.getElementById('periodInfo').textContent = 
+                `当前统计周期：${startDate} - ${endDate}`;
+        }
+        
+        // 获取当前统计周期的开始和结束日期
+        function getCurrentPeriodRange() {
+            const settings = getPeriodSettings();
+            const startDay = settings.startDay;
+            const today = new Date();
+            const currentYear = today.getFullYear();
+            const currentMonth = today.getMonth();
+            const currentDate = today.getDate();
+            
+            // 当前周期的开始日期
+            let periodStart, periodEnd;
+            
+            if (currentDate >= startDay) {
+                // 如果今天大于等于开始日，则周期是本月开始日到下月开始日
+                periodStart = new Date(currentYear, currentMonth, startDay);
+                periodEnd = new Date(currentYear, currentMonth + 1, startDay);
+                // 将结束日期设置为当天的23:59:59，包含当天
+                periodEnd.setHours(23, 59, 59, 999);
+            } else {
+                // 如果今天小于开始日，则周期是上月开始日到本月开始日
+                periodStart = new Date(currentYear, currentMonth - 1, startDay);
+                periodEnd = new Date(currentYear, currentMonth, startDay);
+                // 将结束日期设置为当天的23:59:59，包含当天
+                periodEnd.setHours(23, 59, 59, 999);
+            }
+            
+            return {
+                start: periodStart,
+                end: periodEnd
+            };
+        }
+        
         // 设置默认日期为今天
         function setDefaultDate() {
             const today = new Date().toISOString().split('T')[0];
             document.getElementById('dateInput').value = today;
+            updateOvertimeCheckbox(); // 初始化时根据今天日期设置加班复选框
         }
 
         // 获取星期几 (0:周日, 1:周一, ..., 6:周六)
         function getDayOfWeek(dateStr) {
             const date = new Date(dateStr);
             return date.getDay();
+        }
+
+        // 获取星期几的中文名称
+        function getWeekdayName(dateStr) {
+            const day = getDayOfWeek(dateStr);
+            const weekdays = ['周日', '周一', '周二', '周三', '周四', '周五', '周六'];
+            return weekdays[day];
         }
 
         // 判断是否为周末
@@ -820,14 +1206,302 @@
             return getDayOfWeek(dateStr) === 6;
         }
 
+        // 根据日期更新加班复选框状态
+        function updateOvertimeCheckbox() {
+            const dateInput = document.getElementById('dateInput').value;
+            const isWeekendDate = isWeekend(dateInput);
+            document.getElementById('overtimeCheck').checked = !isWeekendDate;
+            toggleOvertime();
+        }
+
+        // 切换补卡模式
+        function toggleSupplementMode() {
+            isSupplementMode = true;
+            selectedDates = [];
+            
+            // 显示补卡相关元素
+            document.getElementById('batchPunchBtn').style.display = 'inline-block';
+            document.getElementById('cancelSupplementBtn').style.display = 'inline-block';
+            document.getElementById('supplementCalendar').style.display = 'block';
+            document.getElementById('selectedDates').style.display = 'block';
+            
+            // 更新选择日期列表
+            updateSelectedDatesList();
+            
+            // 渲染补卡日历
+            renderSupplementCalendar();
+            
+            alert('已进入补卡模式，请选择需要补卡的日期');
+        }
+
+        // 取消补卡模式
+        function cancelSupplementMode() {
+            isSupplementMode = false;
+            selectedDates = [];
+            
+            // 隐藏补卡相关元素
+            document.getElementById('batchPunchBtn').style.display = 'none';
+            document.getElementById('cancelSupplementBtn').style.display = 'none';
+            document.getElementById('supplementCalendar').style.display = 'none';
+            document.getElementById('selectedDates').style.display = 'none';
+            
+            // 重新渲染主日历
+            renderCalendar();
+        }
+
+        // 更新选择日期列表
+        function updateSelectedDatesList() {
+            const selectedDatesList = document.getElementById('selectedDatesList');
+            selectedDatesList.innerHTML = '';
+            
+            if (selectedDates.length === 0) {
+                selectedDatesList.innerHTML = '<div style="color: #7f8c8d; font-style: italic;">暂无选择日期</div>';
+                return;
+            }
+            
+            // 排序日期
+            selectedDates.sort((a, b) => new Date(a) - new Date(b));
+            
+            selectedDates.forEach(date => {
+                const dateItem = document.createElement('div');
+                dateItem.className = 'selected-date-item';
+                dateItem.textContent = date;
+                selectedDatesList.appendChild(dateItem);
+            });
+        }
+
+        // 渲染补卡日历
+        function renderSupplementCalendar() {
+            const calendarGrid = document.getElementById('supplementCalendarGrid');
+            const calendarTitle = document.getElementById('supplementCalendarTitle');
+            
+            const year = currentSupplementMonth.getFullYear();
+            const month = currentSupplementMonth.getMonth();
+            
+            // 设置日历标题
+            calendarTitle.textContent = `${year}年${month + 1}月`;
+            
+            // 获取当月第一天和最后一天
+            const firstDay = new Date(year, month, 1);
+            const lastDay = new Date(year, month + 1, 0);
+            
+            // 获取当月第一天是星期几（0是周日，6是周六）
+            const firstDayOfWeek = firstDay.getDay();
+            
+            // 获取上个月的最后几天
+            const prevMonthLastDay = new Date(year, month, 0).getDate();
+            
+            // 清空日历
+            calendarGrid.innerHTML = '';
+            
+            // 添加星期标题
+            const weekdays = ['日', '一', '二', '三', '四', '五', '六'];
+            weekdays.forEach(day => {
+                const dayElement = document.createElement('div');
+                dayElement.className = 'calendar-weekday';
+                dayElement.textContent = day;
+                calendarGrid.appendChild(dayElement);
+            });
+            
+            // 添加上个月的日期
+            for (let i = firstDayOfWeek - 1; i >= 0; i--) {
+                const dayElement = document.createElement('div');
+                dayElement.className = 'calendar-day other-month';
+                dayElement.innerHTML = `
+                    <div class="day-number">${prevMonthLastDay - i}</div>
+                `;
+                calendarGrid.appendChild(dayElement);
+            }
+            
+            // 添加当月的日期
+            const records = getRecords();
+            const today = new Date();
+            
+            for (let day = 1; day <= lastDay.getDate(); day++) {
+                const dateStr = `${year}-${(month + 1).toString().padStart(2, '0')}-${day.toString().padStart(2, '0')}`;
+                const record = records.find(r => r.date === dateStr);
+                
+                const dayElement = document.createElement('div');
+                dayElement.className = 'calendar-day';
+                
+                // 检查是否是今天
+                if (today.getFullYear() === year && today.getMonth() === month && today.getDate() === day) {
+                    dayElement.classList.add('today');
+                }
+                
+                // 检查是否已选择
+                if (selectedDates.includes(dateStr)) {
+                    dayElement.classList.add('selected-day');
+                }
+                
+                // 检查是否在当前统计周期内
+                if (isDateInCurrentPeriod(dateStr)) {
+                    dayElement.classList.add('period-day');
+                }
+                
+                let statusText = '';
+                let statusClass = '';
+                
+                if (record) {
+                    if (record.dayType === 'work') {
+                        statusText = '工作';
+                        statusClass = 'work-status';
+                    } else if (record.dayType === 'leave') {
+                        statusText = record.leaveType === 'all' ? '全天假' : 
+                                   record.leaveType === 'morning' ? '上午假' : '下午假';
+                        statusClass = 'leave-status';
+                    } else if (record.dayType === 'rest') {
+                        statusText = '休息';
+                        statusClass = 'rest-status';
+                    }
+                }
+                
+                dayElement.innerHTML = `
+                    <div class="day-number">${day}</div>
+                    ${statusText ? `<div class="day-status ${statusClass}">${statusText}</div>` : ''}
+                `;
+                
+                // 添加点击事件 - 选择/取消选择日期
+                dayElement.onclick = () => {
+                    if (!isSupplementMode) return;
+                    
+                    if (selectedDates.includes(dateStr)) {
+                        // 如果已选择，则取消选择
+                        selectedDates = selectedDates.filter(d => d !== dateStr);
+                        dayElement.classList.remove('selected-day');
+                    } else {
+                        // 如果未选择，则添加选择
+                        selectedDates.push(dateStr);
+                        dayElement.classList.add('selected-day');
+                    }
+                    
+                    updateSelectedDatesList();
+                };
+                
+                calendarGrid.appendChild(dayElement);
+            }
+            
+            // 添加下个月的日期（补齐剩余格子）
+            const totalCells = 42; // 6行 * 7列
+            const remainingCells = totalCells - firstDayOfWeek - lastDay.getDate();
+            
+            for (let day = 1; day <= remainingCells; day++) {
+                const dayElement = document.createElement('div');
+                dayElement.className = 'calendar-day other-month';
+                dayElement.innerHTML = `
+                    <div class="day-number">${day}</div>
+                `;
+                calendarGrid.appendChild(dayElement);
+            }
+        }
+
+        // 切换补卡日历月份
+        function changeSupplementMonth(direction) {
+            currentSupplementMonth.setMonth(currentSupplementMonth.getMonth() + direction);
+            renderSupplementCalendar();
+        }
+
+        // 批量补卡
+        function batchPunchCard() {
+            if (selectedDates.length === 0) {
+                alert('请先选择需要补卡的日期');
+                return;
+            }
+            
+            if (!confirm(`确定要为 ${selectedDates.length} 个日期进行补卡吗？`)) {
+                return;
+            }
+            
+            const records = getRecords();
+            let successCount = 0;
+            let skipCount = 0;
+            
+            selectedDates.forEach(dateStr => {
+                // 检查是否已有记录
+                const existingRecord = records.find(r => r.date === dateStr);
+                if (existingRecord) {
+                    skipCount++;
+                    return;
+                }
+                
+                // 根据星期几设置不同的工作时间
+                const dayOfWeek = getDayOfWeek(dateStr);
+                let record = {
+                    id: Date.now() + Math.random(), // 确保ID唯一
+                    date: dateStr,
+                    dayType: 'work',
+                    morningWork: null,
+                    afternoonWork: null,
+                    overtime: null,
+                    leaveType: null,
+                    normalDuration: 0,
+                    overtimeDuration: 0
+                };
+
+                // 上午工作时间 (8:00-12:00)
+                record.morningWork = {
+                    start: '08:00',
+                    end: '12:00',
+                    duration: calculateDuration('08:00', '12:00')
+                };
+
+                // 下午工作时间 (13:30-17:30)
+                record.afternoonWork = {
+                    start: '13:30',
+                    end: '17:30',
+                    duration: calculateDuration('13:30', '17:30')
+                };
+
+                // 根据星期几设置加班时间
+                if (dayOfWeek === 6) { // 周六
+                    // 周六不用加班
+                    record.overtime = null;
+                } else if (dayOfWeek === 0) { // 周日
+                    // 周日全天工作都算加班，所以不记录单独的加班时间段
+                    record.overtime = null;
+                } else { // 周一至周五
+                    // 晚上加班时间 (18:30-21:30)
+                    record.overtime = {
+                        start: '18:30',
+                        end: '21:30',
+                        duration: calculateDuration('18:30', '21:30')
+                    };
+                }
+
+                // 计算正常工作时长和加班时长
+                calculateWorkTime(record);
+                
+                // 保存记录
+                records.push(record);
+                successCount++;
+            });
+            
+            localStorage.setItem(getStorageKey(), JSON.stringify(records));
+            
+            // 刷新显示
+            displayRecords();
+            updateStatistics();
+            renderCalendar();
+            renderSupplementCalendar();
+            
+            // 显示结果
+            let message = `补卡完成！成功补卡 ${successCount} 个日期`;
+            if (skipCount > 0) {
+                message += `，跳过 ${skipCount} 个已有记录的日期`;
+            }
+            alert(message);
+            
+            // 重置选择
+            selectedDates = [];
+            updateSelectedDatesList();
+        }
+
         // 切换时间输入框显示
         function toggleTimeInputs() {
             const dayType = document.getElementById('dayType').value;
             const timeInputs = document.getElementById('timeInputs');
             const leaveSection = document.getElementById('leaveSection');
-            const morningSection = document.getElementById('morningSection');
-            const lunchSection = document.getElementById('lunchSection');
-            const afternoonSection = document.getElementById('afternoonSection');
+            const workTimeSection = document.getElementById('workTimeSection');
             const overtimeSection = document.getElementById('overtimeSection');
             
             if (dayType === 'rest') {
@@ -835,17 +1509,41 @@
             } else if (dayType === 'leave') {
                 timeInputs.style.display = 'block';
                 leaveSection.style.display = 'block';
-                morningSection.style.display = 'block';
-                lunchSection.style.display = 'block';
-                afternoonSection.style.display = 'block';
+                workTimeSection.style.display = 'block';
                 overtimeSection.style.display = 'block';
             } else {
                 timeInputs.style.display = 'block';
                 leaveSection.style.display = 'none';
-                morningSection.style.display = 'block';
-                lunchSection.style.display = 'block';
-                afternoonSection.style.display = 'block';
+                workTimeSection.style.display = 'block';
                 overtimeSection.style.display = 'block';
+            }
+        }
+
+        // 切换工作时间区域展开/收缩
+        function toggleWorkTime() {
+            const content = document.getElementById('workTimeContent');
+            const toggle = document.getElementById('workTimeToggle');
+            
+            if (content.style.display === 'none') {
+                content.style.display = 'block';
+                toggle.textContent = '▼';
+            } else {
+                content.style.display = 'none';
+                toggle.textContent = '▶';
+            }
+        }
+
+        // 切换加班时间区域展开/收缩
+        function toggleOvertimeSection() {
+            const content = document.getElementById('overtimeContent');
+            const toggle = document.getElementById('overtimeToggle');
+            
+            if (content.style.display === 'none') {
+                content.style.display = 'block';
+                toggle.textContent = '▼';
+            } else {
+                content.style.display = 'none';
+                toggle.textContent = '▶';
             }
         }
 
@@ -853,12 +1551,6 @@
         function toggleMorningWork() {
             const checked = document.getElementById('morningWorkCheck').checked;
             document.getElementById('morningWorkGroup').style.display = checked ? 'block' : 'none';
-        }
-
-        // 切换午休时间
-        function toggleLunchBreak() {
-            const checked = document.getElementById('lunchBreakCheck').checked;
-            document.getElementById('lunchBreakGroup').style.display = checked ? 'block' : 'none';
         }
 
         // 切换下午工作时间
@@ -917,7 +1609,6 @@
                 date: today,
                 dayType: 'work',
                 morningWork: null,
-                lunchBreak: null,
                 afternoonWork: null,
                 overtime: null,
                 leaveType: null,
@@ -930,13 +1621,6 @@
                 start: '08:00',
                 end: '12:00',
                 duration: calculateDuration('08:00', '12:00')
-            };
-
-            // 午休时间 (12:00-13:30)
-            record.lunchBreak = {
-                start: '12:00',
-                end: '13:30',
-                duration: calculateDuration('12:00', '13:30')
             };
 
             // 下午工作时间 (13:30-17:30)
@@ -1098,7 +1782,6 @@
                 date: date,
                 dayType: dayType,
                 morningWork: null,
-                lunchBreak: null,
                 afternoonWork: null,
                 overtime: null,
                 leaveType: null,
@@ -1116,19 +1799,6 @@
                     start: morningStart,
                     end: morningEnd,
                     duration: morningDuration
-                };
-            }
-
-            // 午休时间
-            if (document.getElementById('lunchBreakCheck').checked) {
-                const lunchStart = document.getElementById('lunchStart').value;
-                const lunchEnd = document.getElementById('lunchEnd').value;
-                const lunchDuration = calculateDuration(lunchStart, lunchEnd);
-                
-                record.lunchBreak = {
-                    start: lunchStart,
-                    end: lunchEnd,
-                    duration: lunchDuration
                 };
             }
 
@@ -1227,7 +1897,6 @@
                 date: date,
                 dayType: dayType,
                 morningWork: null,
-                lunchBreak: null,
                 afternoonWork: null,
                 overtime: null,
                 leaveType: null,
@@ -1245,19 +1914,6 @@
                     start: morningStart,
                     end: morningEnd,
                     duration: morningDuration
-                };
-            }
-
-            // 午休时间
-            if (document.getElementById('lunchBreakCheck').checked) {
-                const lunchStart = document.getElementById('lunchStart').value;
-                const lunchEnd = document.getElementById('lunchEnd').value;
-                const lunchDuration = calculateDuration(lunchStart, lunchEnd);
-                
-                record.lunchBreak = {
-                    start: lunchStart,
-                    end: lunchEnd,
-                    duration: lunchDuration
                 };
             }
 
@@ -1349,7 +2005,6 @@
             
             // 确保所有时间段的显示状态正确
             toggleMorningWork();
-            toggleLunchBreak();
             toggleAfternoonWork();
             toggleOvertime();
         }
@@ -1357,21 +2012,19 @@
         // 重置时间输入
         function resetTimeInputs() {
             document.getElementById('morningWorkCheck').checked = true;
-            document.getElementById('lunchBreakCheck').checked = true;
             document.getElementById('afternoonWorkCheck').checked = true;
-            document.getElementById('overtimeCheck').checked = false;
+            
+            // 根据当前日期设置加班勾选状态
+            updateOvertimeCheckbox();
             
             document.getElementById('morningStart').value = '08:00';
             document.getElementById('morningEnd').value = '12:00';
-            document.getElementById('lunchStart').value = '12:00';
-            document.getElementById('lunchEnd').value = '13:30';
             document.getElementById('afternoonStart').value = '13:30';
             document.getElementById('afternoonEnd').value = '17:30';
             document.getElementById('overtimeStart').value = '18:30';
             document.getElementById('overtimeEnd').value = '21:30';
             
             toggleMorningWork();
-            toggleLunchBreak();
             toggleAfternoonWork();
             toggleOvertime();
         }
@@ -1399,7 +2052,6 @@
             
             // 重置所有复选框和选项
             document.getElementById('morningWorkCheck').checked = false;
-            document.getElementById('lunchBreakCheck').checked = false;
             document.getElementById('afternoonWorkCheck').checked = false;
             document.getElementById('overtimeCheck').checked = false;
             
@@ -1408,12 +2060,6 @@
                 document.getElementById('morningWorkCheck').checked = true;
                 document.getElementById('morningStart').value = record.morningWork.start;
                 document.getElementById('morningEnd').value = record.morningWork.end;
-            }
-            
-            if (record.lunchBreak) {
-                document.getElementById('lunchBreakCheck').checked = true;
-                document.getElementById('lunchStart').value = record.lunchBreak.start;
-                document.getElementById('lunchEnd').value = record.lunchBreak.end;
             }
             
             if (record.afternoonWork) {
@@ -1435,7 +2081,6 @@
             
             // 更新显示状态
             toggleMorningWork();
-            toggleLunchBreak();
             toggleAfternoonWork();
             toggleOvertime();
             
@@ -1464,16 +2109,37 @@
         function displayRecords() {
             const records = getRecords();
             const recordsList = document.getElementById('recordsList');
+            const sortOrder = document.getElementById('sortOrder').value;
             
             if (records.length === 0) {
                 recordsList.innerHTML = '<div class="empty-message">暂无记录，添加第一条记录吧！</div>';
                 return;
             }
 
-            // 按日期排序（最新的在前面）
-            records.sort((a, b) => new Date(b.date) - new Date(a.date));
+            // 按日期排序
+            let sortedRecords = [...records];
+            if (sortOrder === 'desc') {
+                sortedRecords.sort((a, b) => new Date(b.date) - new Date(a.date));
+            } else {
+                sortedRecords.sort((a, b) => new Date(a.date) - new Date(b.date));
+            }
             
-            recordsList.innerHTML = records.map(record => {
+            // 如果选择了特定月份，则只显示该月份的记录
+            let filteredRecords = sortedRecords;
+            if (selectedMonth) {
+                filteredRecords = sortedRecords.filter(record => {
+                    const recordDate = new Date(record.date);
+                    return recordDate.getFullYear() === selectedMonth.year && 
+                           recordDate.getMonth() === selectedMonth.month;
+                });
+            }
+            
+            if (filteredRecords.length === 0) {
+                recordsList.innerHTML = '<div class="empty-message">该月份暂无记录</div>';
+                return;
+            }
+            
+            recordsList.innerHTML = filteredRecords.map(record => {
                 // 计算总时长
                 const totalDuration = (record.morningWork ? record.morningWork.duration : 0) + 
                                      (record.afternoonWork ? record.afternoonWork.duration : 0) +
@@ -1482,12 +2148,9 @@
                 return `
                 <div class="record-item ${currentEditingId === record.id ? 'edit-mode' : ''}">
                     <div class="record-header">
-                        <div>
-                            <span class="record-date">${record.date}</span>
-                            <span class="record-type ${record.dayType === 'work' ? 'work-day' : record.dayType === 'leave' ? 'leave-day' : 'rest-day'}">
-                                ${record.dayType === 'work' ? '工作日' : record.dayType === 'leave' ? '请假' : '休息日'}
-                                ${record.leaveType ? `(${record.leaveType === 'all' ? '全天' : record.leaveType === 'morning' ? '上午' : '下午'})` : ''}
-                            </span>
+                        <div class="record-date">
+                            ${record.date}
+                            <span class="weekday">${getWeekdayName(record.date)}</span>
                         </div>
                         <div class="button-group">
                             <button class="edit-btn" onclick="editRecord(${record.id})">修改</button>
@@ -1505,14 +2168,6 @@
                                 </div>
                             ` : ''}
                             
-                            ${record.lunchBreak ? `
-                                <div class="time-block lunch-break">
-                                    <div class="block-title">午休时间</div>
-                                    <div class="block-time">${record.lunchBreak.start} - ${record.lunchBreak.end}</div>
-                                    <div class="block-duration">${formatDuration(record.lunchBreak.duration)}</div>
-                                </div>
-                            ` : ''}
-                            
                             ${record.afternoonWork ? `
                                 <div class="time-block normal-work">
                                     <div class="block-title">下午工作</div>
@@ -1525,7 +2180,7 @@
                                 <div class="time-block overtime">
                                     <div class="block-title">晚上加班</div>
                                     <div class="block-time">${record.overtime.start} - ${record.overtime.end}</div>
-                                    <div class="block-duration">${formatDuration(record.overtime.duration)}</div>
+                                    <div class="overtime-duration">${formatDuration(record.overtime.duration)}</div>
                                 </div>
                             ` : ''}
                             
@@ -1546,13 +2201,13 @@
                         ${record.dayType === 'leave' && record.leaveType !== 'all' ? `
                             <div class="record-total">
                                 正常工作时长: ${formatDuration(record.normalDuration)} | 
-                                加班时长: ${formatDuration(record.overtimeDuration)} |
+                                加班时长: <span class="overtime-duration">${formatDuration(record.overtimeDuration)}</span> |
                                 总时长: ${formatDuration(totalDuration)}
                             </div>
                         ` : record.dayType === 'work' ? `
                             <div class="record-total">
                                 正常工作时长: ${formatDuration(record.normalDuration)} | 
-                                加班时长: ${formatDuration(record.overtimeDuration)} |
+                                加班时长: <span class="overtime-duration">${formatDuration(record.overtimeDuration)}</span> |
                                 总时长: ${formatDuration(totalDuration)}
                             </div>
                         ` : ''}
@@ -1567,23 +2222,26 @@
         // 更新统计信息
         function updateStatistics() {
             const records = getRecords();
-            const currentMonth = new Date().getMonth();
-            const currentYear = new Date().getFullYear();
             
-            const monthRecords = records.filter(record => {
-                const recordDate = new Date(record.date);
-                return recordDate.getMonth() === currentMonth && recordDate.getFullYear() === currentYear;
-            });
+            // 根据选择的月份筛选记录
+            let filteredRecords = records;
+            if (selectedMonth) {
+                filteredRecords = records.filter(record => {
+                    const recordDate = new Date(record.date);
+                    return recordDate.getFullYear() === selectedMonth.year && 
+                           recordDate.getMonth() === selectedMonth.month;
+                });
+            }
             
             // 工作天数（有工作记录的日期）
-            const workDays = monthRecords.filter(r => r.dayType === 'work').length;
+            const workDays = filteredRecords.filter(r => r.dayType === 'work').length;
             
             // 休息天数
-            const restDays = monthRecords.filter(r => r.dayType === 'rest').length;
+            const restDays = filteredRecords.filter(r => r.dayType === 'rest').length;
             
             // 请假时间（小时）
             let totalLeaveHours = 0;
-            monthRecords.forEach(record => {
+            filteredRecords.forEach(record => {
                 if (record.dayType === 'leave') {
                     if (record.leaveType === 'all') {
                         totalLeaveHours += 8; // 全天请假算8小时
@@ -1595,7 +2253,7 @@
             
             // 加班时间 - 使用记录的overtimeDuration字段
             let totalOvertimeHours = 0;
-            monthRecords.forEach(record => {
+            filteredRecords.forEach(record => {
                 totalOvertimeHours += (record.overtimeDuration || 0) / 60;
             });
 
@@ -1603,6 +2261,23 @@
             document.getElementById('totalLeaveHours').textContent = totalLeaveHours.toFixed(1) + ' 小时';
             document.getElementById('totalRestDays').textContent = restDays + ' 天';
             document.getElementById('totalOvertimeHours').textContent = totalOvertimeHours.toFixed(1) + ' 小时';
+            
+            // 更新统计标题
+            if (selectedMonth) {
+                document.getElementById('statsTitle').textContent = 
+                    `${selectedMonth.year}年${selectedMonth.month + 1}月统计汇总`;
+            } else {
+                document.getElementById('statsTitle').textContent = '本月统计汇总';
+            }
+        }
+
+        // 判断日期是否在当前统计周期内
+        function isDateInCurrentPeriod(dateStr) {
+            const periodRange = getCurrentPeriodRange();
+            const recordDate = new Date(dateStr);
+            // 将记录日期设置为当天的23:59:59，确保包含当天
+            recordDate.setHours(23, 59, 59, 999);
+            return recordDate >= periodRange.start && recordDate <= periodRange.end;
         }
 
         // 渲染日历
@@ -1664,6 +2339,11 @@
                     dayElement.classList.add('today');
                 }
                 
+                // 检查是否在当前统计周期内
+                if (isDateInCurrentPeriod(dateStr)) {
+                    dayElement.classList.add('period-day');
+                }
+                
                 let statusText = '';
                 let statusClass = '';
                 
@@ -1694,6 +2374,7 @@
                         document.getElementById('dayType').value = record.dayType;
                         toggleTimeInputs();
                     }
+                    updateOvertimeCheckbox(); // 更新加班复选框状态
                 };
                 
                 calendarGrid.appendChild(dayElement);
@@ -1731,7 +2412,7 @@
             records.sort((a, b) => new Date(a.date) - new Date(b.date));
             
             // 创建CSV内容
-            let csv = '日期,类型,请假类型,上午工作时间,上午工作时长,午休时间,午休时长,下午工作时间,下午工作时长,加班时间,加班时长,正常工作时长,加班时长,总工作时长\n';
+            let csv = '日期,星期,类型,请假类型,上午工作时间,上午工作时长,下午工作时间,下午工作时长,加班时间,加班时长,正常工作时长,加班时长,总工作时长\n';
             
             records.forEach(record => {
                 const type = record.dayType === 'work' ? '工作日' : record.dayType === 'leave' ? '请假' : '休息日';
@@ -1740,8 +2421,6 @@
                      record.leaveType === 'morning' ? '上午请假' : '下午请假') : '';
                 const morningTime = record.morningWork ? `${record.morningWork.start}-${record.morningWork.end}` : '';
                 const morningHours = record.morningWork ? (record.morningWork.duration / 60).toFixed(1) : '';
-                const lunchTime = record.lunchBreak ? `${record.lunchBreak.start}-${record.lunchBreak.end}` : '';
-                const lunchHours = record.lunchBreak ? (record.lunchBreak.duration / 60).toFixed(1) : '';
                 const afternoonTime = record.afternoonWork ? `${record.afternoonWork.start}-${record.afternoonWork.end}` : '';
                 const afternoonHours = record.afternoonWork ? (record.afternoonWork.duration / 60).toFixed(1) : '';
                 const overtime = record.overtime ? `${record.overtime.start}-${record.overtime.end}` : '';
@@ -1753,12 +2432,15 @@
                                    (record.afternoonWork ? record.afternoonWork.duration : 0) +
                                    (record.overtime ? record.overtime.duration : 0)) / 60;
                 
-                csv += `"${record.date}","${type}","${leaveType}","${morningTime}","${morningHours}","${lunchTime}","${lunchHours}","${afternoonTime}","${afternoonHours}","${overtime}","${overtimeHours}","${normalHours}","${overtimeTotalHours}","${totalHours.toFixed(1)}"\n`;
+                csv += `"${record.date}","${getWeekdayName(record.date)}","${type}","${leaveType}","${morningTime}","${morningHours}","${afternoonTime}","${afternoonHours}","${overtime}","${overtimeHours}","${normalHours}","${overtimeTotalHours}","${totalHours.toFixed(1)}"\n`;
             });
 
             // 添加统计信息
-            const currentMonth = new Date().getMonth() + 1;
-            csv += `\n\n${currentMonth}月统计汇总\n`;
+            const periodRange = getCurrentPeriodRange();
+            const startDate = `${periodRange.start.getFullYear()}-${periodRange.start.getMonth()+1}-${periodRange.start.getDate()}`;
+            const endDate = `${periodRange.end.getFullYear()}-${periodRange.end.getMonth()+1}-${periodRange.end.getDate()}`;
+            
+            csv += `\n\n统计周期: ${startDate} 至 ${endDate}\n`;
             csv += `工作天数,${document.getElementById('totalWorkDays').textContent}\n`;
             csv += `请假时间,${document.getElementById('totalLeaveHours').textContent}\n`;
             csv += `休息天数,${document.getElementById('totalRestDays').textContent}\n`;
@@ -1781,6 +2463,7 @@
             if (confirm('确定要清空您的所有数据吗？此操作不可恢复！')) {
                 localStorage.removeItem(getStorageKey());
                 localStorage.removeItem('lastPunchTime_' + getUserId());
+                localStorage.removeItem('periodSettings_' + getUserId());
                 displayRecords();
                 updateStatistics();
                 renderCalendar();
@@ -1789,10 +2472,143 @@
             }
         }
 
+        // ==================== 月份选择功能 ====================
+        
+        // 更新选择的月份统计
+        function updateSelectedMonthStats() {
+            const monthInput = document.getElementById('statMonth').value;
+            if (!monthInput) {
+                alert('请选择月份');
+                return;
+            }
+            
+            const [year, month] = monthInput.split('-').map(Number);
+            selectedMonth = { year, month: month - 1 }; // 月份从0开始
+            
+            // 更新显示信息
+            document.getElementById('selectedMonthInfo').textContent = 
+                `当前显示：${year}年${month}月统计数据`;
+            
+            // 更新统计和记录列表
+            updateStatistics();
+            displayRecords();
+        }
+
+        // ==================== 功能区域展开/收缩 ====================
+        
+        // 切换所有功能区域
+        function toggleAllFunctions() {
+            const content = document.getElementById('allFunctionsContent');
+            const toggle = document.getElementById('allFunctionsToggle');
+            
+            if (content.style.display === 'none') {
+                content.style.display = 'block';
+                toggle.textContent = '▼';
+            } else {
+                content.style.display = 'none';
+                toggle.textContent = '▶';
+            }
+        }
+        
+        // 切换具体功能区域
+        function toggleFunction(functionId) {
+            const content = document.getElementById(functionId + 'Content');
+            const toggle = document.getElementById(functionId + 'Toggle');
+            
+            if (content.style.display === 'none') {
+                content.style.display = 'block';
+                toggle.textContent = '▼';
+            } else {
+                content.style.display = 'none';
+                toggle.textContent = '▶';
+            }
+        }
+
+        // ==================== 数据备份功能 ====================
+        
+        // 导出数据备份
+        function exportBackup() {
+            const backupData = {
+                records: getRecords(),
+                periodSettings: getPeriodSettings(),
+                lastPunchTime: localStorage.getItem('lastPunchTime_' + getUserId()),
+                exportDate: new Date().toISOString()
+            };
+            
+            const dataStr = JSON.stringify(backupData, null, 2);
+            const dataBlob = new Blob([dataStr], {type: 'application/json'});
+            
+            const link = document.createElement('a');
+            link.href = URL.createObjectURL(dataBlob);
+            link.download = `工作时间统计备份_${new Date().toISOString().slice(0,10)}.json`;
+            link.click();
+        }
+        
+        // 导入数据备份
+        function importBackup() {
+            document.getElementById('backupFileInput').click();
+        }
+        
+        // 处理备份文件上传
+        document.getElementById('backupFileInput').addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            if (!file) return;
+            
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                try {
+                    const backupData = JSON.parse(e.target.result);
+                    
+                    if (!confirm('导入备份将覆盖现有数据，确定要继续吗？')) {
+                        return;
+                    }
+                    
+                    // 恢复数据
+                    if (backupData.records) {
+                        localStorage.setItem(getStorageKey(), JSON.stringify(backupData.records));
+                    }
+                    
+                    if (backupData.periodSettings) {
+                        localStorage.setItem('periodSettings_' + getUserId(), JSON.stringify(backupData.periodSettings));
+                    }
+                    
+                    if (backupData.lastPunchTime) {
+                        localStorage.setItem('lastPunchTime_' + getUserId(), backupData.lastPunchTime);
+                    }
+                    
+                    // 刷新显示
+                    init();
+                    alert('数据恢复成功！');
+                    
+                } catch (error) {
+                    alert('备份文件格式错误，无法导入');
+                    console.error(error);
+                }
+            };
+            reader.readAsText(file);
+            
+            // 重置文件输入
+            e.target.value = '';
+        });
+
         // 初始化
         function init() {
             setDefaultDate();
             toggleTimeInputs();
+            
+            // 加载统计周期设置
+            const settings = getPeriodSettings();
+            document.getElementById('periodStartDay').value = settings.startDay;
+            updatePeriodInfo();
+            
+            // 设置当前月份为默认选择
+            const today = new Date();
+            const currentMonth = `${today.getFullYear()}-${(today.getMonth() + 1).toString().padStart(2, '0')}`;
+            document.getElementById('statMonth').value = currentMonth;
+            
+            // 添加日期变化监听
+            document.getElementById('dateInput').addEventListener('change', updateOvertimeCheckbox);
+            
             displayRecords();
             updateStatistics();
             renderCalendar();
