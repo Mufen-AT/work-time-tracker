@@ -798,6 +798,28 @@
             document.getElementById('dateInput').value = today;
         }
 
+        // 获取星期几 (0:周日, 1:周一, ..., 6:周六)
+        function getDayOfWeek(dateStr) {
+            const date = new Date(dateStr);
+            return date.getDay();
+        }
+
+        // 判断是否为周末
+        function isWeekend(dateStr) {
+            const day = getDayOfWeek(dateStr);
+            return day === 0 || day === 6; // 0:周日, 6:周六
+        }
+
+        // 判断是否为周日
+        function isSunday(dateStr) {
+            return getDayOfWeek(dateStr) === 0;
+        }
+
+        // 判断是否为周六
+        function isSaturday(dateStr) {
+            return getDayOfWeek(dateStr) === 6;
+        }
+
         // 切换时间输入框显示
         function toggleTimeInputs() {
             const dayType = document.getElementById('dayType').value;
@@ -875,7 +897,7 @@
             return leaveType;
         }
 
-        // 打卡功能
+        // 打卡功能 - 根据日期自动调整工作时间
         function punchCard() {
             const today = new Date().toISOString().split('T')[0];
             const records = getRecords();
@@ -888,33 +910,60 @@
                 }
             }
             
-            // 创建完整的打卡记录（下午工作时间改为17:30）
-            const record = {
+            // 根据星期几设置不同的工作时间
+            const dayOfWeek = getDayOfWeek(today);
+            let record = {
                 id: Date.now(),
                 date: today,
                 dayType: 'work',
-                morningWork: {
-                    start: '08:00',
-                    end: '12:00',
-                    duration: calculateDuration('08:00', '12:00')
-                },
-                lunchBreak: {
-                    start: '12:00',
-                    end: '13:30',
-                    duration: calculateDuration('12:00', '13:30')
-                },
-                afternoonWork: {
-                    start: '13:30',
-                    end: '17:30', // 改为17:30
-                    duration: calculateDuration('13:30', '17:30')
-                },
-                overtime: {
+                morningWork: null,
+                lunchBreak: null,
+                afternoonWork: null,
+                overtime: null,
+                leaveType: null,
+                normalDuration: 0,
+                overtimeDuration: 0
+            };
+
+            // 上午工作时间 (8:00-12:00)
+            record.morningWork = {
+                start: '08:00',
+                end: '12:00',
+                duration: calculateDuration('08:00', '12:00')
+            };
+
+            // 午休时间 (12:00-13:30)
+            record.lunchBreak = {
+                start: '12:00',
+                end: '13:30',
+                duration: calculateDuration('12:00', '13:30')
+            };
+
+            // 下午工作时间 (13:30-17:30)
+            record.afternoonWork = {
+                start: '13:30',
+                end: '17:30',
+                duration: calculateDuration('13:30', '17:30')
+            };
+
+            // 根据星期几设置加班时间
+            if (dayOfWeek === 6) { // 周六
+                // 周六不用加班
+                record.overtime = null;
+            } else if (dayOfWeek === 0) { // 周日
+                // 周日全天工作都算加班，所以不记录单独的加班时间段
+                record.overtime = null;
+            } else { // 周一至周五
+                // 晚上加班时间 (18:30-21:30)
+                record.overtime = {
                     start: '18:30',
                     end: '21:30',
                     duration: calculateDuration('18:30', '21:30')
-                },
-                leaveType: null
-            };
+                };
+            }
+
+            // 计算正常工作时长和加班时长
+            calculateWorkTime(record);
             
             // 保存记录
             const existingIndex = records.findIndex(r => r.date === today);
@@ -937,7 +986,93 @@
             updateStatistics();
             renderCalendar();
             
-            alert('打卡成功！已记录完整工作日时间。\n\n工作时间详情：\n- 上午：8:00-12:00 (4小时)\n- 下午：13:30-17:30 (4小时)\n- 加班：18:30-21:30 (3小时)\n- 总计：11小时');
+            let message = '打卡成功！';
+            if (dayOfWeek === 6) {
+                message += '\n今天是周六，已记录上午和下午工作时间，晚上不加班。';
+            } else if (dayOfWeek === 0) {
+                message += '\n今天是周日，全天工作时间计入加班。';
+            } else {
+                message += '\n已记录完整工作日时间（含晚上加班）。';
+            }
+            alert(message);
+        }
+
+        // 计算正常工作时长和加班时长
+        function calculateWorkTime(record) {
+            const dateStr = record.date;
+            let normalDuration = 0;
+            let overtimeDuration = 0;
+
+            // 正常工作时间段定义
+            const normalWorkTimes = {
+                morning: { start: '08:00', end: '12:00' },
+                afternoon: { start: '13:30', end: '17:30' }
+            };
+
+            if (isSunday(dateStr)) {
+                // 周日：全天工作都算加班
+                if (record.morningWork) overtimeDuration += record.morningWork.duration;
+                if (record.afternoonWork) overtimeDuration += record.afternoonWork.duration;
+                if (record.overtime) overtimeDuration += record.overtime.duration;
+            } else if (isSaturday(dateStr)) {
+                // 周六：只计算正常工作时间，没有加班
+                if (record.morningWork) {
+                    const overlap = calculateOverlap(
+                        record.morningWork.start, record.morningWork.end,
+                        normalWorkTimes.morning.start, normalWorkTimes.morning.end
+                    );
+                    normalDuration += overlap;
+                    overtimeDuration += (record.morningWork.duration - overlap);
+                }
+                if (record.afternoonWork) {
+                    const overlap = calculateOverlap(
+                        record.afternoonWork.start, record.afternoonWork.end,
+                        normalWorkTimes.afternoon.start, normalWorkTimes.afternoon.end
+                    );
+                    normalDuration += overlap;
+                    overtimeDuration += (record.afternoonWork.duration - overlap);
+                }
+                // 周六没有晚上加班
+            } else {
+                // 周一至周五：按正常工作时间计算
+                if (record.morningWork) {
+                    const overlap = calculateOverlap(
+                        record.morningWork.start, record.morningWork.end,
+                        normalWorkTimes.morning.start, normalWorkTimes.morning.end
+                    );
+                    normalDuration += overlap;
+                    overtimeDuration += (record.morningWork.duration - overlap);
+                }
+                if (record.afternoonWork) {
+                    const overlap = calculateOverlap(
+                        record.afternoonWork.start, record.afternoonWork.end,
+                        normalWorkTimes.afternoon.start, normalWorkTimes.afternoon.end
+                    );
+                    normalDuration += overlap;
+                    overtimeDuration += (record.afternoonWork.duration - overlap);
+                }
+                // 晚上加班全部算作加班
+                if (record.overtime) {
+                    overtimeDuration += record.overtime.duration;
+                }
+            }
+
+            record.normalDuration = normalDuration;
+            record.overtimeDuration = overtimeDuration;
+            return record;
+        }
+
+        // 计算两个时间段的重叠部分
+        function calculateOverlap(start1, end1, start2, end2) {
+            const startMin1 = parseTime(start1);
+            const endMin1 = parseTime(end1);
+            const startMin2 = parseTime(start2);
+            const endMin2 = parseTime(end2);
+            
+            const overlapStart = Math.max(startMin1, startMin2);
+            const overlapEnd = Math.min(endMin1, endMin2);
+            
+            return Math.max(0, overlapEnd - overlapStart);
         }
 
         // 更新最后打卡时间显示
@@ -966,7 +1101,9 @@
                 lunchBreak: null,
                 afternoonWork: null,
                 overtime: null,
-                leaveType: null
+                leaveType: null,
+                normalDuration: 0,
+                overtimeDuration: 0
             };
 
             // 上午工作（请假时也可以记录）
@@ -1047,6 +1184,9 @@
                     return;
                 }
             }
+
+            // 计算正常工作时长和加班时长
+            calculateWorkTime(record);
 
             // 保存到本地存储
             const records = getRecords();
@@ -1090,7 +1230,9 @@
                 lunchBreak: null,
                 afternoonWork: null,
                 overtime: null,
-                leaveType: null
+                leaveType: null,
+                normalDuration: 0,
+                overtimeDuration: 0
             };
 
             // 上午工作（请假时也可以记录）
@@ -1172,6 +1314,9 @@
                 }
             }
 
+            // 计算正常工作时长和加班时长
+            calculateWorkTime(record);
+
             // 保存到本地存储
             const records = getRecords();
             const existingIndex = records.findIndex(r => r.id === currentEditingId);
@@ -1201,6 +1346,12 @@
             document.getElementById('dayType').value = 'work';
             toggleTimeInputs();
             resetTimeInputs();
+            
+            // 确保所有时间段的显示状态正确
+            toggleMorningWork();
+            toggleLunchBreak();
+            toggleAfternoonWork();
+            toggleOvertime();
         }
 
         // 重置时间输入
@@ -1288,8 +1439,8 @@
             toggleAfternoonWork();
             toggleOvertime();
             
-            // 滚动到表单区域
-            document.getElementById('input-section').scrollIntoView({ behavior: 'smooth' });
+            // 修复：使用正确的选择器滚动到表单区域
+            document.querySelector('.input-section').scrollIntoView({ behavior: 'smooth' });
         }
 
         // 删除记录
@@ -1322,7 +1473,13 @@
             // 按日期排序（最新的在前面）
             records.sort((a, b) => new Date(b.date) - new Date(a.date));
             
-            recordsList.innerHTML = records.map(record => `
+            recordsList.innerHTML = records.map(record => {
+                // 计算总时长
+                const totalDuration = (record.morningWork ? record.morningWork.duration : 0) + 
+                                     (record.afternoonWork ? record.afternoonWork.duration : 0) +
+                                     (record.overtime ? record.overtime.duration : 0);
+                
+                return `
                 <div class="record-item ${currentEditingId === record.id ? 'edit-mode' : ''}">
                     <div class="record-header">
                         <div>
@@ -1388,26 +1545,23 @@
                         
                         ${record.dayType === 'leave' && record.leaveType !== 'all' ? `
                             <div class="record-total">
-                                当日总计工作时间: ${formatDuration(
-                                    (record.morningWork ? record.morningWork.duration : 0) + 
-                                    (record.afternoonWork ? record.afternoonWork.duration : 0) +
-                                    (record.overtime ? record.overtime.duration : 0)
-                                )}
+                                正常工作时长: ${formatDuration(record.normalDuration)} | 
+                                加班时长: ${formatDuration(record.overtimeDuration)} |
+                                总时长: ${formatDuration(totalDuration)}
                             </div>
                         ` : record.dayType === 'work' ? `
                             <div class="record-total">
-                                当日总计工作时间: ${formatDuration(
-                                    (record.morningWork ? record.morningWork.duration : 0) + 
-                                    (record.afternoonWork ? record.afternoonWork.duration : 0) +
-                                    (record.overtime ? record.overtime.duration : 0)
-                                )}
+                                正常工作时长: ${formatDuration(record.normalDuration)} | 
+                                加班时长: ${formatDuration(record.overtimeDuration)} |
+                                总时长: ${formatDuration(totalDuration)}
                             </div>
                         ` : ''}
                     ` : `
                         <div style="color: #27ae60; font-style: italic;">💤 休息日</div>
                     `}
                 </div>
-            `).join('');
+                `;
+            }).join('');
         }
 
         // 更新统计信息
@@ -1439,12 +1593,10 @@
                 }
             });
             
-            // 加班时间
+            // 加班时间 - 使用记录的overtimeDuration字段
             let totalOvertimeHours = 0;
             monthRecords.forEach(record => {
-                if (record.overtime) {
-                    totalOvertimeHours += record.overtime.duration / 60;
-                }
+                totalOvertimeHours += (record.overtimeDuration || 0) / 60;
             });
 
             document.getElementById('totalWorkDays').textContent = workDays + ' 天';
@@ -1579,7 +1731,7 @@
             records.sort((a, b) => new Date(a.date) - new Date(b.date));
             
             // 创建CSV内容
-            let csv = '日期,类型,请假类型,上午工作时间,上午工作时长,午休时间,午休时长,下午工作时间,下午工作时长,加班时间,加班时长,总工作时长\n';
+            let csv = '日期,类型,请假类型,上午工作时间,上午工作时长,午休时间,午休时长,下午工作时间,下午工作时长,加班时间,加班时长,正常工作时长,加班时长,总工作时长\n';
             
             records.forEach(record => {
                 const type = record.dayType === 'work' ? '工作日' : record.dayType === 'leave' ? '请假' : '休息日';
@@ -1594,12 +1746,14 @@
                 const afternoonHours = record.afternoonWork ? (record.afternoonWork.duration / 60).toFixed(1) : '';
                 const overtime = record.overtime ? `${record.overtime.start}-${record.overtime.end}` : '';
                 const overtimeHours = record.overtime ? (record.overtime.duration / 60).toFixed(1) : '';
+                const normalHours = (record.normalDuration / 60).toFixed(1);
+                const overtimeTotalHours = (record.overtimeDuration / 60).toFixed(1);
                 
                 const totalHours = ((record.morningWork ? record.morningWork.duration : 0) + 
                                    (record.afternoonWork ? record.afternoonWork.duration : 0) +
                                    (record.overtime ? record.overtime.duration : 0)) / 60;
                 
-                csv += `"${record.date}","${type}","${leaveType}","${morningTime}","${morningHours}","${lunchTime}","${lunchHours}","${afternoonTime}","${afternoonHours}","${overtime}","${overtimeHours}","${totalHours.toFixed(1)}"\n`;
+                csv += `"${record.date}","${type}","${leaveType}","${morningTime}","${morningHours}","${lunchTime}","${lunchHours}","${afternoonTime}","${afternoonHours}","${overtime}","${overtimeHours}","${normalHours}","${overtimeTotalHours}","${totalHours.toFixed(1)}"\n`;
             });
 
             // 添加统计信息
